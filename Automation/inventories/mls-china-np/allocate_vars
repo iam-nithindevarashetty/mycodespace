@@ -1,0 +1,6 @@
+allocation:
+- calculated_allocation: 3500
+  ingestion: 250
+  name: test
+  actual_allocation: 18200
+  retention: 14

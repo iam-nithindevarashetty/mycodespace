@@ -1,0 +1,14 @@
+- misc_props:
+  - attribute: maxGlobalDataSizeMB
+    value: '400000'
+  - attribute: frozenTimePeriodInSecs
+    value: '3152300000'
+  name: mls-testi
+
+- misc_props:
+  - attribute: maxGlobalDataSizeMB
+    value: '400000'
+  - attribute: frozenTimePeriodInSecs
+    value: '3152300000'
+  name: mls-test123
+

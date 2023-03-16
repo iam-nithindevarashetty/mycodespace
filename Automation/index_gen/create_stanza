@@ -1,0 +1,36 @@
+def create_stanza(target_cluster=target_cluster,outer=None,inner=None,index_yaml_load=None):
+    counter = 0
+    full_dict = {}
+    temp_dict = {}
+    for key,value in outer.items():
+        full_dict[key] = value
+
+    full_dict['misc_props'] = []
+    for key, value in inner.items():
+        temp_dict['attribute'] = key
+        temp_dict['value'] = value
+        full_dict['misc_props'].append(copy.deepcopy(temp_dict))
+    if "indexes" in index_yaml_load.keys():
+        for list_item in index_yaml_load['indexes']:
+            if list_item['name'].lower() == full_dict['name'].lower():
+                logger.info("Index already defined !! , Updating the existing configuration")
+                counter = 1
+                list_item.update(full_dict)
+    elif "cluster_indexes" in index_yaml_load.keys():
+        for list_item in index_yaml_load['cluster_indexes']:
+            if list_item['name'].lower() == full_dict['name'].lower():
+                logger.info("Index already defined !! , Updating the existing configuration")
+                counter = 1
+                list_item.update(full_dict)
+    
+    else:
+        logger.info("no vars indexes stanza exists....")
+    if counter == 0:
+        logger.info("Appending Index Configuration")
+        if "indexes" in index_yaml_load.keys():
+            index_yaml_load['indexes'].append(full_dict)
+        if "cluster_indexes" in index_yaml_load.keys():
+            index_yaml_load['cluster_indexes'].append(full_dict)
+        else:
+            logger.info(" Skipping onboarding ----%s------ on stage "%(full_dict['name'].lower()))
+

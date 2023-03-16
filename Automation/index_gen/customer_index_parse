@@ -1,0 +1,23 @@
+def customer_index_parse(target_cluster=target_cluster,index=None,datacenter=None,customer_index_onboard=None,allocation_rate=None):
+    global allocate_vars_path
+    global allocateExistInCluster
+    logger.info("Pulling Index name from Indexes")
+    num_indexers = calculate_indexers(mode='public',datacenter=datacenter,target_cluster=target_cluster)
+    index['name'] = index['name'].strip().lower()
+    index['name'] = re.sub(' ','_',index['name'])
+    logger.info("allocateExistInCluster")
+    logger.info(allocateExistInCluster)
+    logger.info(index)
+    logger.info(allocateExistInCluster[target_cluster][index['name']])
+    logger.info("<<<<<<<<<<<<<<<<<<")
+    if 'retention' not in index.keys():
+        logger.info("retention is default of 14 days")
+        create_index(target_cluster=target_cluster,name=index['name'],rate=allocation_rate,retention=14,idxr_count=num_indexers,customer_index_onboard=customer_index_onboard)
+        if not allocateExistInCluster[target_cluster][index['name']]:
+            allocate_check(target_cluster=target_cluster,name=index['name'],rate=allocation_rate,retention=14,allocation_onboard_vars_path=allocate_vars_path)
+    else:
+        logger.info("retention {} days".format(index['retention']))
+        create_index(target_cluster=target_cluster,name=index['name'],rate=allocation_rate,retention=index['retention'],idxr_count=num_indexers,customer_index_onboard=customer_index_onboard)
+        if not allocateExistInCluster[target_cluster][index['name']]:
+            allocate_check(target_cluster=target_cluster,name=index['name'],rate=allocation_rate,retention=index['retention'],allocation_onboard_vars_path=allocate_vars_path)
+    logger.info("<<<<<<<<<<<<<<<<<<allocateExistInCluster<<<<<<<<<<<<<")

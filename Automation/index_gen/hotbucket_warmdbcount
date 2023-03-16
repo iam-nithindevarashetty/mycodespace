@@ -1,0 +1,9 @@
+def hotbucket_warmdbcount(bucket=None,mode=None,datasize=None):
+    if mode == 'auto':
+        bucket_size = 750
+    elif mode == 'auto_high_volume':
+        bucket_size = 10000
+    if bucket == 'hot':
+        return int(math.ceil((0.15 * (datasize))/bucket_size))
+    elif bucket == 'warm':
+        return int(math.ceil((0.15 * (datasize))/bucket_size))

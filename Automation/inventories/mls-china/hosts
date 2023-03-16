@@ -1,0 +1,19 @@
+azeastcn_cm ansible_host=10.20.3.21
+azeastcn_idxr1 ansible_host=10.20.30.40
+azeastcn_idxr2 ansible_host=10.20.30.41
+azeastcn_idxr3 ansible_host=10.20.30.42
+azeastcn_idxr4 ansible_host=10.20.30.43
+azeastcn_idxr5 ansible_host=10.20.30.44
+azeastcn_idxr6 ansible_host=10.20.30.45
+
+
+
+aznorthcn_idxr1 ansible_host=10.20.30.46
+aznorthcn_idxr2 ansible_host=10.20.30.47
+aznorthcn_idxr3 ansible_host=10.20.30.48
+aznorthcn_idxr4 ansible_host=10.20.30.49
+aznorthcn_idxr5 ansible_host=10.20.30.50
+aznorthcn_idxr6 ansible_host=10.20.30.51
+aznorthcn_idxr7 ansible_host=10.20.30.52
+aznorthcn_idxr8 ansible_host=10.20.30.53
+

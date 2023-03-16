@@ -1,0 +1,154 @@
+#!/usr/bin/python
+
+import json
+import yaml
+import os
+import pprint
+import collections
+import copy
+import logging
+import logging.handlers
+import sys
+import math
+import ruamel.yaml
+import re
+import subprocess
+import shlex
+
+target_cluster = ""
+cluster_index_vars_mapping = "configs/cluster_index_vars_mapping.json"
+customer_json = sys.argv[1]
+customer_json_path = customer_json
+index_cluster_dict = {}
+allocate_cluster_dict = {}
+base_idxr_path = ""
+base_inventory_path = ""
+allocate_vars_path = ""
+sizeIndex_dict = {}
+indexExistInCluster = {}
+allocateExistInCluster = {}
+
+temp_idxr_list = json.loads(open(cluster_index_vars_mapping,"r").read())
+config_dict = {}
+allocate_dict = {}
+config_dict["indexes"] = []
+customer_dict = {}
+base_dict = {}
+base_dict["indexes"] = []
+logger = logging.getLogger(__name__)
+logger.info("Starting Program")
+logging.VERBOSE = 5
+logging.addLevelName(logging.VERBOSE, "VERBOSE")
+logging.Logger.verbose = lambda inst, msg, *args, **kwargs: inst.log(logging.VERBOSE, msg, *args, **kwargs)
+FORMAT = "%(funcName)20s >>> %(message)s"
+logging.basicConfig(level=logging.VERBOSE,format=FORMAT)
+
+
+
+def main():
+    global base_dict
+    global index_cluster_dict
+    global allocate_cluster_dict 
+    global allocateExistInCluster
+    temp_dict = dict()
+    global customer_dict
+    global config_dict
+    global base_inventory_path
+    global allocate_vars_path
+    global env_keys
+    global env_dev_stage
+    global env_prod
+    global env_dev_stage_prod
+    try:
+        logger.info("Loading Main Global Index Vars to base_dict")
+        customer_dict = json.loads(open(customer_json_path,"r").read())
+        config_cluster = json.loads(open("configs/target_clusters_mapping.json","r").read())
+
+        target_clusterlist = config_cluster[sys.argv[2]].split(',')
+        logger.info(target_clusterlist)
+
+        env_keys = list(customer_dict['fluent_config']['environments'].keys())
+        env_dev_stage = ['dev', 'stage']
+        env_prod = ['prod']
+        env_dev_stage_prod = ['prod','dev', 'stage']
+
+
+
+        if env_keys == env_dev_stage:
+            if customer_dict['fluent_config']['environments']['dev'][0]['region'] or customer_dict['fluent_config']['environments']['stage'][0]['region'] == 'cne':
+                for inventory_target_cluster in target_clusterlist:
+                    if inventory_target_cluster == "mls-china-np"  in temp_idxr_list.keys():
+                        for datacenter in temp_idxr_list[inventory_target_cluster]:
+                            if datacenter == "azeastcn":
+                                buildConfigIndexesList(inventory_target_cluster,datacenter,temp_idxr_list[inventory_target_cluster][datacenter])
+                        # buildAllocateIndexesList(target_cluster=inventory_target_cluster)
+
+        for index_name in customer_dict['indexes']:
+            checkIfindexExistInCluster(index_name,index_cluster_dict)
+            # checkIfallocateExistInCluster(index_name,target_clusterlist,allocate_cluster_dict)
+
+    except Exception as e:
+        logger.warning("Input Load Failed - %s" %e.message)
+        sys.exit(1)
+
+    logger.info(indexExistInCluster)
+    logger.info(allocateExistInCluster)
+
+    for index_name in customer_dict['indexes']:
+        for target_cluster in target_clusterlist:
+            logger.info("target_cluster ---------> {}".format(target_cluster))
+            if target_cluster == "mls-china":
+                base_idxr_path = "inventories/%s/group_vars/idxr_cluster/vars" %target_cluster
+                allocate_vars_path = "inventories/%s/allocate_vars" %target_cluster
+                base_inventory_path = "inventories/%s/hosts" %target_cluster
+                logger.info(base_idxr_path)
+                logger.info(allocate_vars_path)
+                logger.info(base_inventory_path)
+                for datacenter in index_cluster_dict[target_cluster].keys():
+                    if datacenter == "azeastus":
+                        logger.info("---------------------------------------")
+                        logger.info(target_cluster)
+                        logger.info(datacenter)
+                        logger.info(index_name['name'].lower())
+                        if indexExistInCluster[target_cluster][datacenter][index_name['name'].lower()]:
+                            logger.info("Index already exists")
+                            logger.info("old_ingestion_size ={}".format(sizeIndex_dict[target_cluster][datacenter][index_name['name'].lower()]))
+                            logger.info(calculate_indexers(mode='public',datacenter=datacenter,target_cluster=target_cluster))
+                            new_ingestion_size=int(int(index_name['daily_data_ingestion_MB'])*1.3*int(index_name['retention']))/int(calculate_indexers(mode='public',datacenter=datacenter,target_cluster=target_cluster))
+                            old_ingestion_size = int(sizeIndex_dict[target_cluster][datacenter][index_name['name'].lower()])
+                            logger.info("new_ingestion_size = {}".format(new_ingestion_size))
+                            if new_ingestion_size >= old_ingestion_size:
+                                logger.info("New ingestion size is greater than older ingestion size")
+                                customer_index_parse(target_cluster=target_cluster,index=index_name,datacenter=datacenter,customer_index_onboard=temp_idxr_list[target_cluster][datacenter],allocation_rate=index_name['daily_data_ingestion_MB'])
+                            else:
+                                logger.info("New ingestion size is lesser than older ingestion size value")
+                        if not indexExistInCluster[target_cluster][datacenter][index_name['name'].lower()]:
+                            logger.info("\n")
+                            logger.info("Running customer_index_parse")
+                            customer_index_parse(target_cluster=target_cluster,index=index_name,datacenter=datacenter,customer_index_onboard=temp_idxr_list[target_cluster][datacenter],allocation_rate=index_name['daily_data_ingestion_MB'])
+                    
+                    if datacenter == "aznorthus":
+                        logger.info("---------------------------------------")
+                        logger.info(target_cluster)
+                        logger.info(datacenter)
+                        logger.info(index_name['name'].lower())
+                        if indexExistInCluster[target_cluster][datacenter][index_name['name'].lower()]:
+                            logger.info("Index already exists")
+                            logger.info("old_ingestion_size ={}".format(sizeIndex_dict[target_cluster][datacenter][index_name['name'].lower()]))
+                            logger.info(calculate_indexers(mode='public',datacenter=datacenter,target_cluster=target_cluster))
+                            new_ingestion_size=int(int(index_name['daily_data_ingestion_MB'])*1.3*int(index_name['retention']))/int(calculate_indexers(mode='public',datacenter=datacenter,target_cluster=target_cluster))
+                            old_ingestion_size = int(sizeIndex_dict[target_cluster][datacenter][index_name['name'].lower()])
+                            logger.info("new_ingestion_size = {}".format(new_ingestion_size))
+                            if new_ingestion_size >= old_ingestion_size:
+                                logger.info("New ingestion size is greater than older ingestion size")
+                                customer_index_parse(target_cluster=target_cluster,index=index_name,datacenter=datacenter,customer_index_onboard=temp_idxr_list[target_cluster][datacenter],allocation_rate=index_name['daily_data_ingestion_MB'])
+                            else:
+                                logger.info("New ingestion size is lesser than older ingestion size value")   
+                        if not indexExistInCluster[target_cluster][datacenter][index_name['name'].lower()]:
+                            logger.info("\n")
+                            logger.info("Running customer_index_parse")
+                            customer_index_parse(target_cluster=target_cluster,index=index_name,datacenter=datacenter,customer_index_onboard=temp_idxr_list[target_cluster][datacenter],allocation_rate=index_name['daily_data_ingestion_MB'])
+
+
+if __name__ == "__main__":
+    main()

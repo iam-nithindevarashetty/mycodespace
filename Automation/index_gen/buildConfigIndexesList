@@ -1,0 +1,34 @@
+def buildConfigIndexesList(target_cluster,datacenter,indexVarsPath):
+    global config_dict
+    global index_cluster_dict
+    global sizeIndex_dict
+    index_temp_dict=[]
+    size_dict = {}
+    temp_dict = {}
+    if target_cluster not in index_cluster_dict.keys() and target_cluster not in sizeIndex_dict.keys():
+        index_cluster_dict[target_cluster] = {}
+        sizeIndex_dict[target_cluster] = {}
+    if datacenter not in index_cluster_dict[target_cluster].keys() and datacenter not in sizeIndex_dict[target_cluster].keys():
+        index_cluster_dict[target_cluster][datacenter] = []
+        sizeIndex_dict[target_cluster][datacenter] = []
+    logger.info("Loading Index Vars ------ %s" %datacenter)
+    for varsPath in indexVarsPath:
+        logger.info("vars ------ %s" %varsPath)
+        if 'indexes' in temp_dict.keys():
+            for item in temp_dict["indexes"]:
+                index_temp_dict.append(item['name'].lower())
+                if item['name'] not in size_dict.keys():
+                    size_dict[item['name']] = ""
+                for misc_props in item['misc_props']:
+                    if misc_props['attribute'] == "maxTotalDataSizeMB":
+                        size_dict[item['name']] = misc_props['value']
+        elif 'cluster_indexes' in temp_dict.keys():
+            for item in temp_dict["cluster_indexes"]:
+                index_temp_dict.append(item['name'].lower())
+                if item['name'] not in size_dict.keys():
+                    size_dict[item['name']] = ""
+                for misc_props in item['misc_props']:
+                    if misc_props['attribute'] == "maxTotalDataSizeMB":
+                        size_dict[item['name']] = misc_props['value']
+    index_cluster_dict[target_cluster][datacenter] = index_temp_dict
+    sizeIndex_dict[target_cluster][datacenter] = size_dict

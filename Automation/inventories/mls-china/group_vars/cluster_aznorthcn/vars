@@ -1,0 +1,20 @@
+idxr_list: "{{ groups['idxr_cnnorth_list'] }}"
+idxr_cluster_mgr: aznorthcn_cm
+cluster_label: mls-china-prod-aznorth 
+cluster_name: mls-china-aznorth 
+
+# data and config dir list
+volume_dirs:
+- /data/splunk_install
+- /data/splunk_install/db/hotwarm
+- /data/splunk_install/db/cold
+- /data/splunk_install/db
+
+cluster_indexes:
+- misc_props:
+  - attribute: maxGlobalDataSizeMB
+    value: '400000'
+  - attribute: frozenTimePeriodInSecs
+    value: '3152300000'
+  name: wcnp_china
+  maxDataSize: auto_high_volume

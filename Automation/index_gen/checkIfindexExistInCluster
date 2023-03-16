@@ -1,0 +1,19 @@
+indexExistInCluster = {}
+
+def checkIfindexExistInCluster(index_name,index_cluster_dict):
+    global indexExistInCluster
+    logger.info("validating index --- {} --- if exists".format(index_name['name'].lower()))
+    temp_dict = {}
+    for target_cluster in index_cluster_dict:
+        if target_cluster not in indexExistInCluster.keys():
+            indexExistInCluster[target_cluster]={}
+        for datacenter in index_cluster_dict[target_cluster]:
+            if datacenter not in indexExistInCluster[target_cluster].keys():
+                indexExistInCluster[target_cluster][datacenter]={}
+            if index_name['name'].lower() not in indexExistInCluster[target_cluster][datacenter].keys():
+                indexExistInCluster[target_cluster][datacenter][index_name['name'].lower()] = None
+            if index_name['name'].lower() in index_cluster_dict[target_cluster][datacenter]:
+                indexExistInCluster[target_cluster][datacenter][index_name['name'].lower()] = True
+            else:
+                indexExistInCluster[target_cluster][datacenter][index_name['name'].lower()] = False
+    return indexExistInCluster

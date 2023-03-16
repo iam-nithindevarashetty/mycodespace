@@ -1,0 +1,14 @@
+def calculate_indexers(mode='private',datacenter=None,target_cluster=None):
+    base_inventory_path = "inventories/%s/hosts" %target_cluster
+    logger.info("Indexers node calculation  ")
+    logger.info(base_inventory_path)
+    logger.info(datacenter)
+    if mode == 'public':
+        if datacenter == "idxr_cluster":
+            command = 'cat {} | grep ansible_host | egrep -i \"idxr\" | egrep -i \"{}\" |wc -l'.format(base_inventory_path,"[a-z]")
+        else:
+            command = 'cat {} | grep ansible_host | egrep -i \"idxr\" | egrep -i \"{}\" |wc -l'.format(base_inventory_path,datacenter)
+    else:
+        command = 'cat {} | grep ansible_host | egrep -i \"idxr\" | egrep -i \"{}\" |wc -l'.format(base_inventory_path,datacenter)
+    logger.info(int(subprocess.Popen(command,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT).communicate()[0]))
+    return int(subprocess.Popen(command,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT).communicate()[0])

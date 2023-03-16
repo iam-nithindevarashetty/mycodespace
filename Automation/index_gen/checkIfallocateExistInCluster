@@ -1,0 +1,14 @@
+def checkIfallocateExistInCluster(index_name,target_clusterlist,allocate_cluster_dict):
+    global allocateExistInCluster
+    logger.info("validating index --- {} --- if exists".format(index_name['name'].lower()))
+    temp_dict = {}
+    for target_cluster in target_clusterlist:
+        if target_cluster not in allocateExistInCluster.keys():
+            allocateExistInCluster[target_cluster]={}
+        if index_name['name'].lower() not in allocateExistInCluster[target_cluster].keys():
+            allocateExistInCluster[target_cluster][index_name['name'].lower()] = None
+        if index_name['name'].lower() in index_cluster_dict[target_cluster]:
+            allocateExistInCluster[target_cluster][index_name['name'].lower()] = True
+        else:
+            allocateExistInCluster[target_cluster][index_name['name'].lower()] = False
+    return allocateExistInCluster

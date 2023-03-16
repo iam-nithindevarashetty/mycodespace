@@ -1,0 +1,14 @@
+def buildAllocateIndexesList(target_cluster=None):
+    global allocate_cluster_dict
+    logger.info(target_cluster)
+    varsPath = "inventories/%s/allocate_vars" %target_cluster
+    tempAllocateList = []
+    logger.info("buildAllocateIndexesList")
+    logger.info(varsPath)
+    if os.path.isfile(str(varsPath)):
+        allocate_yaml_dict = ruamel.yaml.load(open(varsPath,"r").read(),Loader=ruamel.yaml.RoundTripLoader)
+        if not target_cluster in allocate_dict.keys():
+            allocate_cluster_dict[target_cluster]=[]
+        for index in allocate_yaml_dict["allocation"]:
+            tempAllocateList.append(index['name'].lower())
+    allocate_cluster_dict[target_cluster] = tempAllocateList

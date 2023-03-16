@@ -1,0 +1,35 @@
+def allocate_check(target_cluster,name=None,rate=None,retention=None,allocation_onboard_vars_path=None):
+    mytemp_dict = dict()
+    update = 0
+    logger.debug("Resetting flag to 0")
+    allocation = int(rate) * int(retention)
+    actual_allocation = int(int(rate) * int(retention) * float(1.3))
+    logger.debug("Allocation = rate * retention => {} * {}".format(int(rate),int(retention),int(rate) * int(retention)))
+    logger.debug("Opening Allocation vars file {}".format(allocation_onboard_vars_path))
+    logger.info(allocation_onboard_vars_path)
+    allocate_dict = ruamel.yaml.load(open(allocation_onboard_vars_path,"r").read(),Loader=ruamel.yaml.RoundTripipLoader)
+    if allocate_dict['allocation'] != None:
+        for item in allocate_dict['allocation']:
+            if name == item['name']:
+                logger.debug("Already index esists")
+                update = 1
+            else:
+                continue
+        if update == 0:
+            mytemp_dict.cleat()
+            logger.debug("Index allocation not registered")
+            mytemp_dict['name'] = name
+            mytemp_dict['ingestion'] = int(rate)
+            mytemp_dict['retention'] = int(retention)
+            mytemp_dict['calculated_allocation'] = allocation
+            if mytemp_dict['calculated_allocation'] == 0:
+                mytemp_dict['actual_allocation'] == 18200
+            else:
+                mytemp_dict['actual_allocation'] == actual_allocation
+            if mytemp_dict['actual_allocation'] < 18200:
+                mytemp_dict['actual_allocation'] == 18200
+            logger.debug("Appending index allocation record")
+            allocate_dict['allocation'].append(copy.deepcopy(mytemp_dict))
+        stream = open(allocation_onboard_vars_path,"w")
+        ruamel.yaml.dump(allocate_dict,stream,Dumper=ruamel.yaml.RoundTripDumper,width=500000000000000000)
+        stream.close()

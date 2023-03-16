@@ -1,0 +1,9 @@
+def getTargetCluster(customer_dict,indexExistInCluster):
+    for inventory_target_cluster in ["mls-china-np","mls-china"]:
+        for index_name in customer_dict['indexes']:
+            logger.info(index_name)
+            for datacenter in indexExistInCluster[inventory_target_cluster].keys():
+                logger.info(datacenter)
+                if indexExistInCluster[inventory_target_cluster][datacenter][index_name['name']]:
+                    logger.info(inventory_target_cluster)
+                    return inventory_target_cluster
